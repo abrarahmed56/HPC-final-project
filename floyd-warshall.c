@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 void floyd_warshall_serial() {
   int N = 4;
@@ -53,7 +54,16 @@ void floyd_warshall_omp() {
 
 int main (int argc, char *argv[]) 
 {
+  clock_t start, end;
+  double cpu_time_used;
+  start = clock();
   floyd_warshall_serial();
-  printf("\n");
+  end = clock();
+  cpu_time_used = ((double) (end - start));
+  printf("Time for serial code: %f\n", cpu_time_used);
+  start = clock();
   floyd_warshall_omp();
+  end = clock();
+  cpu_time_used = ((double) (end - start));
+  printf("Time for omp code: %f\n", cpu_time_used);
 }
