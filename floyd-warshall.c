@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <limits.h>
 
 int* makeCopy(int* original_array, int N) {
   int* array_copy = (int*) malloc(N*N*sizeof(int));
@@ -19,8 +20,9 @@ int* floyd_warshall_serial(int* distance, int N) {
   for (int k = 0; k < N; k++) {
     for (int i = 0; i < N; i++) {
       for (int j = 0; j < N; j++) {
-	if (*(distanceCopy+(i*N)+k) + *(distanceCopy+(k*N)+j) < *(distanceCopy+(i*N)+j)) {
-	  *(distanceCopy+(i*N)+j) = *(distanceCopy+(i*N)+k) + *(distanceCopy+(k*N)+j);
+	int new_val = *(distanceCopy+(i*N)+k) + *(distanceCopy+(k*N)+j);
+	if (new_val < *(distanceCopy+(i*N)+j) && new_val > 0) {
+	  *(distanceCopy+(i*N)+j) = new_val;
 	}
       }
     }
@@ -31,13 +33,14 @@ int* floyd_warshall_serial(int* distance, int N) {
 int* floyd_warshall_omp(int* distance, int N) {
   int* distanceCopy = makeCopy(distance, N);
   for (int k = 0; k < N; k++) {
-#pragma omp parallel
-    {
+  #pragma omp parallel
+  {
     #pragma omp for
     for (int i = 0; i < N; i++) {
       for (int j = 0; j < N; j++) {
-	if (*(distanceCopy+(i*N)+k) + *(distanceCopy+(k*N)+j) < *(distanceCopy+(i*N)+j)) {
-	  *(distanceCopy+(i*N)+j) = *(distanceCopy+(i*N)+k) + *(distanceCopy+(k*N)+j);
+	int new_val = *(distanceCopy+(i*N)+k) + *(distanceCopy+(k*N)+j);
+	if (new_val < *(distanceCopy+(i*N)+j) && new_val > 0) {
+	  *(distanceCopy+(i*N)+j) = new_val;
 	}
       }
     }
@@ -56,37 +59,44 @@ void initialize_matrix(int* distance, int PERCENT_INF, int N) {
       else {
 	int prob = rand();
 	if (prob < PERCENT_INF * RAND_MAX) {
-	  *(distance+index) = -1;
+	  *(distance+index) = INT_MAX;
 	}
 	else {
 	  *(distance+index) = rand();
 	}
       }
     }
-  }  
+  }
 }
 
 void time_functions(int* distance, int N) {
-  clock_t start, end;
+  clock_t start_serial, end_serial;
+  double start_omp, end_omp;
   double cpu_time_used_serial, cpu_time_used_omp;
-  start = clock();
+
+  start_serial = clock();
   int* serial_matrix = floyd_warshall_serial(distance, N);
-  end = clock();
-  cpu_time_used_serial = ((double) (end - start));
+  end_serial = clock();
+  cpu_time_used_serial = ((double) (end_serial - start_serial));
   printf("Time for serial code: %f\n", (cpu_time_used_serial/CLOCKS_PER_SEC));
-  start = clock();
+
+  start_omp = omp_get_wtime();
   int* parallel_matrix = floyd_warshall_omp(distance, N);
-  end = clock();
-  cpu_time_used_omp = ((double) (end - start));
-  printf("Time for omp code: %f\n", cpu_time_used_omp/CLOCKS_PER_SEC);
-  double error = 0;
+  end_omp = omp_get_wtime();
+  cpu_time_used_omp = end_omp - start_omp;
+
+  printf("Time for omp code: %f\n", cpu_time_used_omp);
+
+  int error = 0;
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       int index = i*N + j;
-      error += fabs(*(serial_matrix+index) - *(parallel_matrix+index));
+      error += abs(*(serial_matrix+index) - *(parallel_matrix+index));
     }
   }
-  printf("Error: %f\n", error);
+
+  printf("Error: %d\n", error);
+
   if (cpu_time_used_omp < cpu_time_used_serial) {
     printf("omp is faster\n");
   }
@@ -104,6 +114,22 @@ void time_functions(int* distance, int N) {
 int main (int argc, char *argv[]) 
 {
   int N = 1000;
+
+  // In case we need to re-evaluate with a hard-coded graph:
+  /*
+  int N = 4;
+
+  int distance_vals[16] = {0, INF, -2, INF, 4, 0, 3, INF, INF, INF, 0, 2, INF, -1, INF, 0};
+  int* distance = (int*) malloc(N*N*sizeof(int));
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      int index = i*4 + j;
+      *(distance+index) = distance_vals[index];
+    }
+  }
+  */
+
   int* distance = (int*) malloc(N*N*sizeof(int));
   double PERCENT_INF = 0;
   while (PERCENT_INF <= 1) {
