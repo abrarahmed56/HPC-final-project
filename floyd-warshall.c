@@ -49,7 +49,7 @@ int* floyd_warshall_omp(int* distance, int N) {
   return distanceCopy;
 }
 
-void initialize_matrix(int* distance, int PERCENT_INF, int N) {
+void initialize_matrix(int* distance, double PERCENT_INF, int N) {
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       int index = i*N + j;
@@ -69,6 +69,16 @@ void initialize_matrix(int* distance, int PERCENT_INF, int N) {
   }
 }
 
+void print_matrix(int* distance, int N) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      printf("%d, ", *(distance+i*N+j));
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
 void time_functions(int* distance, int N) {
   clock_t start_serial, end_serial;
   double start_omp, end_omp;
@@ -80,6 +90,7 @@ void time_functions(int* distance, int N) {
   cpu_time_used_serial = ((double) (end_serial - start_serial));
   cpu_time_used_serial = cpu_time_used_serial/CLOCKS_PER_SEC;
   printf("Time for serial code: %f\n", (cpu_time_used_serial));
+  //print_matrix(serial_matrix, N);
 
   start_omp = omp_get_wtime();
   int* parallel_matrix = floyd_warshall_omp(distance, N);
@@ -122,7 +133,8 @@ int main (int argc, char *argv[])
   /*
   int N = 4;
 
-  int distance_vals[16] = {0, INF, -2, INF, 4, 0, 3, INF, INF, INF, 0, 2, INF, -1, INF, 0};
+  //int distance_vals[16] = {0, INF, -2, INF, 4, 0, 3, INF, INF, INF, 0, 2, INF, -1, INF, 0};
+  int distance_vals[16] = {0, 1, 4, 1, 3, 0, 2, 500, 4, 1, 0, 3, 2, 500, 500, 0};
   int* distance = (int*) malloc(N*N*sizeof(int));
 
   for (int i = 0; i < 4; i++) {

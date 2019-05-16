@@ -4,10 +4,10 @@
 #include <limits.h>
 #include <stdlib.h>
 
-//void create_matrix(int* distance, int PERCENT_INF, int N, int num_rows_per_process) {
-void create_matrix(int* distance, int PERCENT_INF, int N, int num_rows_per_process, int mpirank) {
+void create_matrix(int* distance, double PERCENT_INF, int N, int num_rows_per_process, int mpirank) {
 
-  //int distance_vals[16] = {0, INF, -2, INF, 4, 0, 3, INF, INF, INF, 0, 2, INF, -1, INF, 0};
+  // hard-coded version
+  /*
   int distance_vals[16] = {0, 500, -2, 500, 4, 0, 3, 500, 500, 500, 0, 2, 500, -1, 500, 0};
   //int* distance = (int*) malloc(N*N*sizeof(int));
 
@@ -19,12 +19,13 @@ void create_matrix(int* distance, int PERCENT_INF, int N, int num_rows_per_proce
       *(distance+alloc_index) = distance_vals[array_index];
     }
   }
+  */
 
-  /*
   for (int i = 0; i < num_rows_per_process; i++) {
     for (int j = 0; j < N; j++) {
-      int index = i*num_rows_per_process + j;
-      if (i == j) {
+      int index = i*N + j;
+      int i_in_entire_matrix = mpirank*num_rows_per_process + i;
+      if (i_in_entire_matrix == j) {
 	*(distance+index) = 0;
       }
       else {
@@ -38,7 +39,6 @@ void create_matrix(int* distance, int PERCENT_INF, int N, int num_rows_per_proce
       }
     }
   }
-  */
 }
 
 void floyd_warshall_inner (int* distance, int N, int num_rows_per_process, int mpirank, int k) {
@@ -55,7 +55,7 @@ void floyd_warshall_inner (int* distance, int N, int num_rows_per_process, int m
   for (int i = 0; i < num_rows_per_process; i++) {
     for (int j = 0; j < N; j++) {
       int new_val = *(distance+(i*N)+k) + *(row_k+j);
-      if (new_val < *(distance+(i*N)+j)/* && new_val > 0*/) {
+      if (new_val < *(distance+(i*N)+j) && new_val > 0) {
 	  *(distance+(i*N)+j) = new_val;
       }
     }
@@ -80,8 +80,8 @@ void print_matrix(int* distance) {
 }
 
 int main(int argc, char* argv[]) {
-  //int N = 1000;
-  int N = 4;
+  int N = 1000;
+  //int N = 4;
   double PERCENT_INF = 0.5;
   int mpirank, num_processes;
   MPI_Init(&argc, &argv);
@@ -98,6 +98,7 @@ int main(int argc, char* argv[]) {
   int* distance = (int*) malloc(N*num_rows_per_process*sizeof(int));
 
   create_matrix(distance, PERCENT_INF, N, num_rows_per_process, mpirank);
+  /*
   MPI_Barrier(MPI_COMM_WORLD);
   if (mpirank == 0) {
     printf("creation of rows 1 and 2:\n");
@@ -121,8 +122,12 @@ int main(int argc, char* argv[]) {
     print_matrix(distance);
   }
   MPI_Barrier(MPI_COMM_WORLD);
-
+  */
   free(distance);
+
+  if (mpirank == 0) {
+    printf("Completed Floyd-Warshall MPI\n");
+  }
   MPI_Finalize();
   return 0;
 
