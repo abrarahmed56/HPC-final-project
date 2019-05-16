@@ -78,7 +78,8 @@ void time_functions(int* distance, int N) {
   int* serial_matrix = floyd_warshall_serial(distance, N);
   end_serial = clock();
   cpu_time_used_serial = ((double) (end_serial - start_serial));
-  printf("Time for serial code: %f\n", (cpu_time_used_serial/CLOCKS_PER_SEC));
+  cpu_time_used_serial = cpu_time_used_serial/CLOCKS_PER_SEC;
+  printf("Time for serial code: %f\n", (cpu_time_used_serial));
 
   start_omp = omp_get_wtime();
   int* parallel_matrix = floyd_warshall_omp(distance, N);
@@ -98,10 +99,12 @@ void time_functions(int* distance, int N) {
   printf("Error: %d\n", error);
 
   if (cpu_time_used_omp < cpu_time_used_serial) {
-    printf("omp is faster\n");
+    double factor = cpu_time_used_serial / cpu_time_used_omp;
+    printf("omp is faster by a factor of %f\n", factor);
   }
   else if (cpu_time_used_omp > cpu_time_used_serial) {
-    printf("serial is faster\n");
+    double factor = cpu_time_used_omp / cpu_time_used_serial;
+    printf("serial is faster by a factor of %f\n", factor);
   }
   else {
     printf("miraculously, same time for serial and omp\n");
