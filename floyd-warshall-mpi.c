@@ -90,9 +90,9 @@ int main(int argc, char* argv[]) {
   int STARTING_N = 1000;
   int ENDING_N = 4000;
   int N_INCR = 500;
-  int STARTING_NUM_THREADS = 1;
-  int ENDING_NUM_THREADS = 6;
-  int THREAD_INCR = 1;
+  int STARTING_NUM_THREADS = 5;
+  int ENDING_NUM_THREADS = 50;
+  int THREAD_INCR = 5;
   int num_threads = STARTING_NUM_THREADS;
   int N = STARTING_N;
   //int N = 4;
