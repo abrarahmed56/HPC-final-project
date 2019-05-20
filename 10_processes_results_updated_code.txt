@@ -1,0 +1,79 @@
+N = 1000, num threads = 5, num processes = 1: 0.182768 seconds
+N = 1500, num threads = 5, num processes = 1: 0.565060 seconds
+N = 2000, num threads = 5, num processes = 1: 1.276409 seconds
+N = 2500, num threads = 5, num processes = 1: 2.564676 seconds
+N = 3000, num threads = 5, num processes = 1: 4.618267 seconds
+N = 3500, num threads = 5, num processes = 1: 7.372740 seconds
+N = 4000, num threads = 5, num processes = 1: 10.833983 seconds
+
+N = 1000, num threads = 10, num processes = 1: 0.143557 seconds
+N = 1500, num threads = 10, num processes = 1: 0.292321 seconds
+N = 2000, num threads = 10, num processes = 1: 0.652763 seconds
+N = 2500, num threads = 10, num processes = 1: 1.288284 seconds
+N = 3000, num threads = 10, num processes = 1: 2.432021 seconds
+N = 3500, num threads = 10, num processes = 1: 4.144184 seconds
+N = 4000, num threads = 10, num processes = 1: 6.107514 seconds
+
+N = 1000, num threads = 15, num processes = 1: 0.135035 seconds
+N = 1500, num threads = 15, num processes = 1: 0.447278 seconds
+N = 2000, num threads = 15, num processes = 1: 0.864001 seconds
+N = 2500, num threads = 15, num processes = 1: 1.825822 seconds
+N = 3000, num threads = 15, num processes = 1: 3.239145 seconds
+N = 3500, num threads = 15, num processes = 1: 5.930375 seconds
+N = 4000, num threads = 15, num processes = 1: 9.450325 seconds
+
+N = 1000, num threads = 20, num processes = 1: 0.305741 seconds
+N = 1500, num threads = 20, num processes = 1: 0.878095 seconds
+N = 2000, num threads = 20, num processes = 1: 1.183693 seconds
+N = 2500, num threads = 20, num processes = 1: 2.119780 seconds
+N = 3000, num threads = 20, num processes = 1: 3.330406 seconds
+N = 3500, num threads = 20, num processes = 1: 4.746590 seconds
+N = 4000, num threads = 20, num processes = 1: 12.981022 seconds
+
+N = 1000, num threads = 25, num processes = 1: 0.348402 seconds
+N = 1500, num threads = 25, num processes = 1: 0.917258 seconds
+N = 2000, num threads = 25, num processes = 1: 1.047032 seconds
+N = 2500, num threads = 25, num processes = 1: 1.968505 seconds
+N = 3000, num threads = 25, num processes = 1: 4.148090 seconds
+N = 3500, num threads = 25, num processes = 1: 8.832560 seconds
+N = 4000, num threads = 25, num processes = 1: 12.867868 seconds
+
+N = 1000, num threads = 30, num processes = 1: 0.417892 seconds
+N = 1500, num threads = 30, num processes = 1: 1.035383 seconds
+N = 2000, num threads = 30, num processes = 1: 1.578042 seconds
+N = 2500, num threads = 30, num processes = 1: 2.916679 seconds
+N = 3000, num threads = 30, num processes = 1: 4.605422 seconds
+N = 3500, num threads = 30, num processes = 1: 10.687829 seconds
+N = 4000, num threads = 30, num processes = 1: 16.032861 seconds
+
+N = 1000, num threads = 35, num processes = 1: 0.449500 seconds
+N = 1500, num threads = 35, num processes = 1: 1.172722 seconds
+N = 2000, num threads = 35, num processes = 1: 1.606940 seconds
+N = 2500, num threads = 35, num processes = 1: 3.032893 seconds
+N = 3000, num threads = 35, num processes = 1: 3.369398 seconds
+N = 3500, num threads = 35, num processes = 1: 5.553616 seconds
+N = 4000, num threads = 35, num processes = 1: 13.637408 seconds
+
+N = 1000, num threads = 40, num processes = 1: 0.409489 seconds
+N = 1500, num threads = 40, num processes = 1: 0.591891 seconds
+N = 2000, num threads = 40, num processes = 1: 0.863645 seconds
+N = 2500, num threads = 40, num processes = 1: 1.584713 seconds
+N = 3000, num threads = 40, num processes = 1: 4.194317 seconds
+N = 3500, num threads = 40, num processes = 1: 8.447892 seconds
+N = 4000, num threads = 40, num processes = 1: 19.331351 seconds
+
+N = 1000, num threads = 45, num processes = 1: 0.190976 seconds
+N = 1500, num threads = 45, num processes = 1: 0.423635 seconds
+N = 2000, num threads = 45, num processes = 1: 1.158903 seconds
+N = 2500, num threads = 45, num processes = 1: 1.854864 seconds
+N = 3000, num threads = 45, num processes = 1: 3.610417 seconds
+N = 3500, num threads = 45, num processes = 1: 5.083830 seconds
+N = 4000, num threads = 45, num processes = 1: 13.033055 seconds
+
+N = 1000, num threads = 50, num processes = 1: 0.525828 seconds
+N = 1500, num threads = 50, num processes = 1: 0.423887 seconds
+N = 2000, num threads = 50, num processes = 1: 0.864373 seconds
+N = 2500, num threads = 50, num processes = 1: 2.726187 seconds
+N = 3000, num threads = 50, num processes = 1: 4.441440 seconds
+N = 3500, num threads = 50, num processes = 1: 7.158760 seconds
+N = 4000, num threads = 50, num processes = 1: 9.856715 seconds
