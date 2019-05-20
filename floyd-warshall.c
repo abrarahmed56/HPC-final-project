@@ -33,10 +33,9 @@ int* floyd_warshall_serial(int* distance, int N) {
 int* floyd_warshall_omp(int* distance, int N) {
   int* distanceCopy = makeCopy(distance, N);
   for (int k = 0; k < N; k++) {
-  #pragma omp parallel
-  {
-    #pragma omp for
+    #pragma omp parallel for
     for (int i = 0; i < N; i++) {
+      //printf("thread %d of %d\n", omp_get_thread_num(), omp_get_num_threads());
       for (int j = 0; j < N; j++) {
 	int new_val = *(distanceCopy+(i*N)+k) + *(distanceCopy+(k*N)+j);
 	if (new_val < *(distanceCopy+(i*N)+j) && new_val > 0) {
@@ -44,7 +43,6 @@ int* floyd_warshall_omp(int* distance, int N) {
 	}
       }
     }
-  }
   }
   return distanceCopy;
 }
@@ -127,7 +125,8 @@ void time_functions(int* distance, int N) {
 
 int main (int argc, char *argv[]) 
 {
-  int N = 1000;
+  omp_set_num_threads(4);
+  int N = 1000;//1000000;
 
   // In case we need to re-evaluate with a hard-coded graph:
   /*
