@@ -43,34 +43,27 @@ void create_matrix(int* distance, double PERCENT_INF, int N, int num_rows_per_pr
 }
 
 void floyd_warshall_mpi(int* distance, int N, int num_rows_per_process, int mpirank) {
-  // num_rows_to_broadcast should not be greater than num_rows_per_process
-  int num_rows_to_broadcast = 1;
-  int k_row_index = 0;
-  int size_to_broadcast = N*num_rows_to_broadcast;
-  int* row_k = (int*) malloc(size_to_broadcast*sizeof(int));
+  int* row_k = (int*) malloc(N*sizeof(int));
+  int process_with_row_k, index;
   for (int k = 0; k < N; k++) {
-    if (k_row_index % num_rows_to_broadcast == 0) {
-      int process_with_row_k = k / num_rows_per_process;
-      if (mpirank == process_with_row_k) {
-	int index = k % num_rows_per_process;
-	for (int i = 0; i < size_to_broadcast; i++) {
-	  *(row_k+i) = *(distance+(index*N)+i);
-	}
+    process_with_row_k = k / num_rows_per_process;
+    if (mpirank == process_with_row_k) {
+      index = k % num_rows_per_process;
+      for (int i = 0; i < N; i++) {
+	*(row_k+i) = *(distance+(index*N)+i);
       }
-      MPI_Bcast(row_k, size_to_broadcast, MPI_INT, process_with_row_k, MPI_COMM_WORLD);
-      k_row_index = 0;
     }
+    //MPI_Bcast(row_k, N, MPI_INT, process_with_row_k, MPI_COMM_WORLD);
 
     #pragma omp parallel for
     for (int i = 0; i < num_rows_per_process; i++) {
       for (int j = 0; j < N; j++) {
-	int new_val = *(distance+(i*N) + k) + *(row_k + k_row_index*N+j);
+	int new_val = *(distance+(i*N)+k) + *(row_k+j);
 	if (new_val < *(distance+(i*N)+j) && new_val > 0) {
 	  *(distance+(i*N)+j) = new_val;
 	}
       }
     }
-    k_row_index++;
   }
   free(row_k);
 }
@@ -87,15 +80,14 @@ void print_matrix(int* distance) {
 
 int main(int argc, char* argv[]) {
   //printf("threads: %d\n", omp_get_num_threads());
-  int STARTING_N = 1000;
-  int ENDING_N = 4000;
-  int N_INCR = 500;
-  int STARTING_NUM_THREADS = 5;
-  int ENDING_NUM_THREADS = 50;
-  int THREAD_INCR = 5;
+  int STARTING_N = 10000;
+  int ENDING_N = 20000;
+  int N_INCR = 5000;
+  int STARTING_NUM_THREADS = 1;
+  int ENDING_NUM_THREADS = 1;
+  int THREAD_INCR = 1;
   int num_threads = STARTING_NUM_THREADS;
   int N = STARTING_N;
-  //int N = 4;
   double PERCENT_INF = 0.5;
   int mpirank, num_processes;
   MPI_Init(&argc, &argv);
@@ -111,7 +103,7 @@ int main(int argc, char* argv[]) {
       printf("N must be a factor of number of processes\n");
       MPI_Abort(MPI_COMM_WORLD, 0);
     }
-    MPI_Barrier(MPI_COMM_WORLD);
+    //MPI_Barrier(MPI_COMM_WORLD);
     
     int* distance = (int*) malloc(N*num_rows_per_process*sizeof(int));
     
@@ -155,8 +147,9 @@ int main(int argc, char* argv[]) {
       N += N_INCR;
     }
     else {
+      printf("\n");
       num_threads += THREAD_INCR;
-      N = 1000;
+      N = STARTING_N;
     }
     
   }

@@ -126,7 +126,7 @@ void time_functions(int* distance, int N) {
 int main (int argc, char *argv[]) 
 {
   omp_set_num_threads(4);
-  int N = 1000;//1000000;
+  int N = 2000;//1000000;
 
   // In case we need to re-evaluate with a hard-coded graph:
   /*
