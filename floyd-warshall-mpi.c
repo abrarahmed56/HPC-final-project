@@ -4,6 +4,28 @@
 #include <math.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+void print_matrix(int* distance) {
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 4; j++) {
+      printf("%d, ", *(distance+i*4+j));
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+void write_matrix(int* distance, int N, FILE* fd) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      fprintf(fd, "%d, ", *(distance+i*N+j));
+    }
+    fprintf(fd, "\n");
+  }
+  fprintf(fd, "\n");
+}
 
 void create_matrix(int* distance, double PERCENT_INF, int N, int num_rows_per_process, int mpirank) {
 
@@ -22,6 +44,7 @@ void create_matrix(int* distance, double PERCENT_INF, int N, int num_rows_per_pr
   }
   */
 
+  // random values, for actual code
   for (int i = 0; i < num_rows_per_process; i++) {
     for (int j = 0; j < N; j++) {
       int index = i*N + j;
@@ -40,6 +63,59 @@ void create_matrix(int* distance, double PERCENT_INF, int N, int num_rows_per_pr
       }
     }
   }
+
+  /*
+  FILE* initial_matrix_file = NULL;
+  char filename[256];
+  snprintf(filename, 256, "matrix_files/initial/initial_matrix_%f_percent.txt", PERCENT_INF);
+  initial_matrix_file = fopen(filename, "r");
+
+  if (initial_matrix_file == NULL) {
+    printf("Error opening file %s\n", filename);
+  }
+
+  int c = 0;
+  int MAX_INT_LENGTH = 10;
+  char stringnum[MAX_INT_LENGTH];
+  int count = 0;
+  int numIndex = 0;
+  while (c != EOF) {
+    c = getc(initial_matrix_file);
+    if (isdigit(c)) {
+      stringnum[numIndex] = c;
+      numIndex++;
+    }
+    else if (c == ',') {
+      int num = atoi(stringnum);
+      *(distance+count) = num;
+      memset(stringnum, 0, MAX_INT_LENGTH);
+      numIndex = 0;
+      count++;
+    }
+  }
+  if (count == 2000 * 2000) {
+    printf("correct number\n");
+  }
+  else {
+    printf("incorrect number, %d :(\n", count);
+  }
+
+  fclose(initial_matrix_file);
+  */
+
+  //write initialized matrix to file for verification (testing)
+  /*
+  FILE* initialize_matrix_read = NULL;
+  char filename2[256];
+  snprintf(filename2, 256, "matrix_files/mpi/initial_matrix_after_read_%f_percent.txt", PERCENT_INF);
+  initialize_matrix_read = fopen(filename2, "w");
+  if (initialize_matrix_read == NULL) {
+    printf("Error opening file\n");
+  }
+
+  write_matrix(distance, N, initialize_matrix_read);
+  fclose(initialize_matrix_read);
+  */
 }
 
 void floyd_warshall_mpi(int* distance, int N, int num_rows_per_process, int mpirank) {
@@ -53,7 +129,7 @@ void floyd_warshall_mpi(int* distance, int N, int num_rows_per_process, int mpir
 	*(row_k+i) = *(distance+(index*N)+i);
       }
     }
-    //MPI_Bcast(row_k, N, MPI_INT, process_with_row_k, MPI_COMM_WORLD);
+    MPI_Bcast(row_k, N, MPI_INT, process_with_row_k, MPI_COMM_WORLD);
 
     #pragma omp parallel for
     for (int i = 0; i < num_rows_per_process; i++) {
@@ -68,33 +144,26 @@ void floyd_warshall_mpi(int* distance, int N, int num_rows_per_process, int mpir
   free(row_k);
 }
 
-void print_matrix(int* distance) {
-  for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < 4; j++) {
-      printf("%d, ", *(distance+i*4+j));
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
-
 int main(int argc, char* argv[]) {
   //printf("threads: %d\n", omp_get_num_threads());
-  int STARTING_N = 10000;
-  int ENDING_N = 20000;
+  int STARTING_N = 2000;
+  int ENDING_N = 2000;
   int N_INCR = 5000;
   int STARTING_NUM_THREADS = 1;
   int ENDING_NUM_THREADS = 1;
   int THREAD_INCR = 1;
   int num_threads = STARTING_NUM_THREADS;
   int N = STARTING_N;
-  double PERCENT_INF = 0.5;
+  double STARTING_PERCENT = 0.0;
+  double ENDING_PERCENT = 1.0;
+  double PERCENT_INCR = 0.25;
+  double PERCENT_INF = STARTING_PERCENT;
   int mpirank, num_processes;
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_processes);
   
-  while (N <= ENDING_N && num_threads <= ENDING_NUM_THREADS) {
+  while (N <= ENDING_N && num_threads <= ENDING_NUM_THREADS && PERCENT_INF <= ENDING_PERCENT) {
     omp_set_num_threads(num_threads);
 
     int num_rows_per_process = N / num_processes;
@@ -108,6 +177,7 @@ int main(int argc, char* argv[]) {
     int* distance = (int*) malloc(N*num_rows_per_process*sizeof(int));
     
     create_matrix(distance, PERCENT_INF, N, num_rows_per_process, mpirank);
+
     MPI_Barrier(MPI_COMM_WORLD);
     double tt = MPI_Wtime();
     floyd_warshall_mpi(distance, N, num_rows_per_process, mpirank);
@@ -135,23 +205,40 @@ int main(int argc, char* argv[]) {
       }
     */
     tt = MPI_Wtime() - tt;
-    free(distance);
     
     MPI_Barrier(MPI_COMM_WORLD);
     if (mpirank == 0) {
       //printf("Completed Floyd-Warshall MPI in %f seconds\n", tt);
       printf("N = %d, num threads = %d, num processes = %d: %f seconds\n", N, num_threads, num_processes, tt);
     }
+
+    /*
+    FILE* mpi_matrix_read = NULL;
+    char filename[256];
+    snprintf(filename, 256, "matrix_files/mpi/mpi_matrix_%f_percent.txt", PERCENT_INF);
+    mpi_matrix_read = fopen(filename, "w");
+    if (mpi_matrix_read == NULL) {
+      printf("Error opening file\n");
+    }
+
+    write_matrix(distance, N, mpi_matrix_read);
+    fclose(mpi_matrix_read);
+    */
+    free(distance);
     
-    if (N < ENDING_N) {
+    if (PERCENT_INF < ENDING_PERCENT) {
+      PERCENT_INF += PERCENT_INCR;
+    }
+    else if (N < ENDING_N) {
       N += N_INCR;
+      PERCENT_INF = STARTING_PERCENT;
     }
     else {
       printf("\n");
       num_threads += THREAD_INCR;
       N = STARTING_N;
+      PERCENT_INF = STARTING_PERCENT;
     }
-    
   }
 
   MPI_Finalize();

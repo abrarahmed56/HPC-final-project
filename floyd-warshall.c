@@ -77,7 +77,17 @@ void print_matrix(int* distance, int N) {
   printf("\n");
 }
 
-void time_functions(int* distance, int N) {
+void write_matrix(int* distance, int N, FILE* fd) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      fprintf(fd, "%d, ", *(distance+i*N+j));
+    }
+    fprintf(fd, "\n");
+  }
+  fprintf(fd, "\n");
+}
+
+void time_functions(int* distance, int N, double PERCENT_INF) {
   clock_t start_serial, end_serial;
   double start_omp, end_omp;
   double cpu_time_used_serial, cpu_time_used_omp;
@@ -88,7 +98,16 @@ void time_functions(int* distance, int N) {
   cpu_time_used_serial = ((double) (end_serial - start_serial));
   cpu_time_used_serial = cpu_time_used_serial/CLOCKS_PER_SEC;
   printf("Time for serial code: %f\n", (cpu_time_used_serial));
-  //print_matrix(serial_matrix, N);
+
+  FILE* serial_matrix_file = NULL;
+  char filename_serial[256];
+  snprintf(filename_serial, 256, "serial_matrix_%f_percent.txt", PERCENT_INF);
+  serial_matrix_file = fopen(filename_serial, "w");
+  if (serial_matrix_file == NULL) {
+    printf("Error opening file\n");
+  }
+  write_matrix(serial_matrix, N, serial_matrix_file);
+  fclose(serial_matrix_file);
 
   start_omp = omp_get_wtime();
   int* parallel_matrix = floyd_warshall_omp(distance, N);
@@ -97,6 +116,16 @@ void time_functions(int* distance, int N) {
 
   printf("Time for omp code: %f\n", cpu_time_used_omp);
 
+  FILE* omp_matrix_file = NULL;
+  char filename_omp[256];
+  snprintf(filename_omp, 256, "omp_matrix_%f_percent.txt", PERCENT_INF);
+  omp_matrix_file = fopen(filename_omp, "w");
+  if (omp_matrix_file == NULL) {
+    printf("Error opening file\n");
+  }
+  write_matrix(parallel_matrix, N, omp_matrix_file);
+
+  fclose(omp_matrix_file);
   int error = 0;
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
@@ -149,7 +178,18 @@ int main (int argc, char *argv[])
   while (PERCENT_INF <= 1) {
     printf("About %.0f%% of the vertices are connected\n", (PERCENT_INF*100));
     initialize_matrix(distance, PERCENT_INF, N);
-    time_functions(distance, N);
+    FILE* initial_matrix_file = NULL;
+    char filename[256];
+    snprintf(filename, 256, "initial_matrix_%f_percent.txt", PERCENT_INF);
+    initial_matrix_file = fopen(filename, "w");
+    if (initial_matrix_file == NULL) {
+      printf("Error opening file\n");
+      return 1;
+    }
+    write_matrix(distance, N, initial_matrix_file);
+    fclose(initial_matrix_file);
+
+    time_functions(distance, N, PERCENT_INF);
     PERCENT_INF += 0.25;
   }
   free(distance);
